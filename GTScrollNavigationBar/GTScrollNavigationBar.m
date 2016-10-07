@@ -66,7 +66,7 @@
 #pragma mark - Properties
 - (void)setScrollView:(UIScrollView*)scrollView
 {
-    [self resetToDefaultPositionWithAnimation:NO];
+    self.scrollState = GTScrollNavigationBarStateNone;
     
     _scrollView = scrollView;
     
@@ -144,9 +144,15 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherG
     
     CGFloat contentInsetTop = self.scrollView.contentInset.top;
     bool isBouncePastTopEdge = contentOffsetY < -contentInsetTop;
+    bool isBouncePastBottomEdge = (self.scrollView.contentSize.height <= contentOffsetY + self.scrollView.frame.size.height);
+    bool keeoContentOffSetY = true;
     if (isBouncePastTopEdge && CGRectGetMinY(frame) == maxY) {
         self.lastContentOffsetY = contentOffsetY;
         return;
+    } else if (isBouncePastTopEdge && deltaY < 0) {
+        keeoContentOffSetY = false;
+    } else if (isBouncePastBottomEdge && deltaY > 0) {
+        keeoContentOffSetY = false;
     }
     
     bool isScrolling = (self.scrollState == GTScrollNavigationBarStateScrollingUp ||
@@ -181,7 +187,7 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherG
     // When panning down at begining of scrollView and the bar is expanding, do not update lastContentOffsetY
     if (isBouncePastTopEdge && CGRectGetMinY(frame) != maxY) {
         
-    } else {
+    } else if (keeoContentOffSetY) {
         self.lastContentOffsetY = contentOffsetY;
     }
 }
@@ -215,7 +221,7 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherG
     }
     self.frame = frame;
     
-
+    
     if (self.scrollView) {
         CGRect parentViewFrame = self.scrollView.superview.frame;
         parentViewFrame.origin.y += offsetY;
