@@ -66,6 +66,9 @@
 #pragma mark - Properties
 - (void)setScrollView:(UIScrollView*)scrollView
 {
+    if (!scrollView) {
+        [self resetToDefaultPositionWithAnimation:NO];
+    }
     self.scrollState = GTScrollNavigationBarStateNone;
     
     _scrollView = scrollView;
